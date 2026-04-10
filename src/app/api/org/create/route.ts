@@ -45,6 +45,10 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: error.message }, { status: 500 });
     }
 
+    if (!org || !org.id) {
+      return NextResponse.json({ error: 'Failed to create organization' }, { status: 500 });
+    }
+
     const email = user.emailAddresses[0]?.emailAddress;
     const fullName = `${user.firstName || ''} ${user.lastName || ''}`.trim();
 

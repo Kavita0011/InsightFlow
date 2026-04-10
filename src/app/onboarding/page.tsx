@@ -49,7 +49,9 @@ export default function OnboardingPage() {
     const name = e.target.value;
     setValue('orgName', name);
     const slug = name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
-    setValue('slug', slug);
+    if (!watch('slug') || watch('slug') === slug) {
+      setValue('slug', slug);
+    }
   };
 
   const onSubmit = async (data: OnboardingData) => {

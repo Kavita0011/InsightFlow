@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 import { 
   Plus, Save, Layout, BarChart3, LineChart, PieChart, Table, 
   Activity, Grid, Settings, Trash2, Move, Edit3, Eye, Share2,
@@ -168,6 +168,29 @@ export default function DashboardPage() {
   const [isEditing, setIsEditing] = useState(true);
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [dashboardName, setDashboardName] = useState('My Dashboard');
+  const [loading, setLoading] = useState(false);
+  const [saving, setSaving] = useState(false);
+
+  useEffect(() => {
+    async function fetchDashboard() {
+      try {
+        setLoading(true);
+        const response = await fetch('/api/dashboards');
+        if (response.ok) {
+          const data = await response.json();
+          if (data.dashboards && data.dashboards.length > 0) {
+            const dashboard = data.dashboards[0];
+            setDashboardName(dashboard.name);
+          }
+        }
+      } catch (error) {
+        console.error('Error loading dashboard:', error);
+      } finally {
+        setLoading(false);
+      }
+    }
+    fetchDashboard();
+  }, []);
 
   const addWidget = (type: Widget['type']) => {
     const newWidget: Widget = {
@@ -211,8 +234,29 @@ export default function DashboardPage() {
   };
 
   const saveDashboard = async () => {
-    console.log('Saving dashboard:', { name: dashboardName, layout: widgets });
-    alert('Dashboard saved successfully!');
+    try {
+      setSaving(true);
+      const response = await fetch('/api/dashboards', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          name: dashboardName,
+          layout: { widgets },
+        }),
+      });
+      
+      if (response.ok) {
+        alert('Dashboard saved successfully!');
+      } else {
+        const error = await response.json();
+        alert('Failed to save: ' + (error.error || 'Unknown error'));
+      }
+    } catch (error) {
+      console.error('Error saving dashboard:', error);
+      alert('Failed to save dashboard');
+    } finally {
+      setSaving(false);
+    }
   };
 
   const widgetsToolbar = [

@@ -28,13 +28,12 @@ export async function GET(request: Request) {
 
     const { data: dataSource } = await supabase
       .from('data_sources')
-      .select('config')
+      .select('config, org_id')
       .eq('id', dataSourceId)
-      .eq('org_id', userData.org_id)
       .single();
 
-    if (!dataSource) {
-      return NextResponse.json({ error: 'Data source not found' }, { status: 404 });
+    if (!dataSource || dataSource.org_id !== userData.org_id) {
+      return NextResponse.json({ error: 'Data source not found or access denied' }, { status: 403 });
     }
 
     return NextResponse.json({ 
